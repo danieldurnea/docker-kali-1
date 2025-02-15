@@ -1,67 +1,33 @@
----
-#################################
-#################################
-## Super Linter GitHub Actions ##
-#################################
-#################################
-name: Lint Code Base
+v:
+  TZ: Asia/Kolkata
+  GIT_USERNAME: danieldurnea
+  GIT_EMAIL: danieldurnea@gmail.com
 
-#
-# Documentation:
-# https://help.github.com/en/articles/workflow-syntax-for-github-actions
-#
+task:
+  name: "Kali Linux SSH"
+  trigger_type: manual
+  timeout_in: 120m
+  container:
+      image: kalilinux/kali-rolling:latest
+      cpu: 32
+      memory: 64G
 
-#############################
-# Start the job on all push #
-#############################
-on:
-  push:
-  pull_request:
-  schedule:
-    - cron: "0 0 * * 0"
-  workflow_dispatch:
+  Setup_script:
+      - apt update
+      - apt install sudo apt-utils -y
+      - DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata
+      - ln -sf /usr/share/zoneinfo/${TZ} /etc/localtime
+      - apt-get install -y tzdata
+      - dpkg-reconfigure --frontend noninteractive tzdata
+      - sudo apt update -y && sudo apt install git aria2 curl wget tmate rsync zip unzip lzma cpio ccache neofetch openssh-server -y
+      - sudo apt install python2 -y
+      - sudo ln -sf /usr/bin/python2 /usr/bin/python
+      - git config --global user.name "$GIT_USERNAME"
+      - git config --global user.email "$GIT_EMAIL"
+      
 
-permissions: {}
+  Tmate_script:
+      - bash tmate.sh
 
-###############
-# Set the Job #
-###############
-jobs:
-  build:
-    # Name the Job
-    name: Lint Code Base
-    # Set the agent to run on
-    runs-on: ubuntu-latest
-
-    ############################################
-    # Grant status permission for MULTI_STATUS #
-    ############################################
-    permissions:
-      contents: read
-      packages: read
-      statuses: write
-
-    ##################
-    # Load all steps #
-    ##################
-    steps:
-      ##########################
-      # Checkout the code base #
-      ##########################
-      - name: Checkout Code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          # Full git history is needed to get a proper list of changed
-          # files within `super-linter`
-          fetch-depth: 0
-
-      ################################
-      # Run Linter against code base #
-      ################################
-      - name: Lint Code Base
-        uses: super-linter/super-linter@85f7611e0f7b53c8573cca84aa0ed4344f6f6a4d # v7.2.1
-        env:
-          VALIDATE_ALL_CODEBASE: true
-          LINTER_RULES_PATH: .
-          DEFAULT_BRANCH: main
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  Spam_script:
+      - bash spam.sh
